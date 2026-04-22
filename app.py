@@ -8,13 +8,34 @@ import numpy as np
 import re
 import json
 
-# ── LOAD DATA ────────────────────────────────────────────────────────────────
+# ── THEMES ─────────────────────────────────────────────────────────────────────
+DARK = {
+    'bg': '#0d1117', 'surface': '#161b22', 'surface2': '#111d2e',
+    'border': '#1a2332', 'border2': '#21262d', 'border3': '#30363d',
+    'text': '#f0f6fc', 'text2': '#e6edf3', 'text3': '#a8b4c0',
+    'text4': '#8b949e', 'text5': '#6e7681',
+    'card_sel': '#111d2e', 'card_bg': '#0d1117',
+    'plot_bg': '#0d1117', 'grid': '#161b22',
+}
+LIGHT = {
+    'bg': '#f6f8fa', 'surface': '#ffffff', 'surface2': '#eaf0fb',
+    'border': '#d0d7de', 'border2': '#c1c9d2', 'border3': '#afb8c1',
+    'text': '#1a1f36', 'text2': '#24292f', 'text3': '#444d56',
+    'text4': '#6e7781', 'text5': '#8c959f',
+    'card_sel': '#dbeafe', 'card_bg': '#ffffff',
+    'plot_bg': '#ffffff', 'grid': '#e8ecf0',
+}
+
+def T(theme, key):
+    return (DARK if theme == 'dark' else LIGHT)[key]
+
+# ── LOAD DATA ──────────────────────────────────────────────────────────────────
 df = pd.read_json('forecast_data.json')
 df['ds'] = pd.to_datetime(df['ds'], format='mixed', dayfirst=False)
 df['mape'] = pd.to_numeric(df['mape'], errors='coerce')
 materials = df['material'].unique().tolist()
 
-# ── HELPERS ──────────────────────────────────────────────────────────────────
+# ── HELPERS ────────────────────────────────────────────────────────────────────
 def clean_name(name):
     n = str(name).strip()
     n = re.split(r'\s*[\(\[]', n)[0].strip()
@@ -71,15 +92,15 @@ def get_seasonality(flag, score):
         return 'None', '#8b949e'
     except: return 'Unknown', '#8b949e'
 
-# ── KPI VALUES ───────────────────────────────────────────────────────────────
+# ── KPI VALUES ─────────────────────────────────────────────────────────────────
 mapes    = [fmt_mape(df[df['material'] == m]['mape'].iloc[0]) for m in materials]
 valid_m  = [x for x in mapes if x is not None]
 avg_mape = round(np.mean(valid_m), 1) if valid_m else 0
 n_mats   = len(materials)
 mc_avg   = mape_color(avg_mape)
 
-# ── CARD BUILDER ─────────────────────────────────────────────────────────────
-def make_mat_card(mat, idx, is_selected):
+# ── CARD BUILDER (now theme-aware) ─────────────────────────────────────────────
+def make_mat_card(mat, idx, is_selected, theme='dark'):
     row0      = df[df['material'] == mat].iloc[0]
     part_code = str(row0['part_code'])
     dname     = clean_name(mat)
@@ -90,14 +111,32 @@ def make_mat_card(mat, idx, is_selected):
     mape_str  = f'{mape_v:.1f}%' if mape_v else 'N/A'
     td, tdc   = get_trend_direction(row0['trend_slope'])
     ti        = td.split()[0]
-    card_bg   = '#111d2e' if is_selected else '#0d1117'
-    card_bl   = '2px solid #388bfd' if is_selected else '1px solid #21262d'
-    name_col  = '#79c0ff' if is_selected else '#e6edf3'
-    code_col  = '#388bfd' if is_selected else '#6e7681'
-    mbg       = ('#0d2b1e' if mape_v and mape_v < 20
-                 else '#2b1d0d' if mape_v and mape_v < 30
-                 else '#2b0d0d' if mape_v
-                 else '#161b22')
+
+    if theme == 'dark':
+        card_bg  = '#111d2e' if is_selected else '#0d1117'
+        card_bl  = '2px solid #388bfd' if is_selected else '1px solid #21262d'
+        name_col = '#79c0ff' if is_selected else '#e6edf3'
+        code_col = '#388bfd' if is_selected else '#6e7681'
+        mbg      = ('#0d2b1e' if mape_v and mape_v < 20
+                    else '#2b1d0d' if mape_v and mape_v < 30
+                    else '#2b0d0d' if mape_v
+                    else '#161b22')
+        mdl_bg   = '#161b22'
+        mdl_col  = '#a8b4c0'
+        mdl_bdr  = '#30363d'
+    else:
+        card_bg  = '#dbeafe' if is_selected else '#ffffff'
+        card_bl  = '2px solid #2563eb' if is_selected else '1px solid #d0d7de'
+        name_col = '#1d4ed8' if is_selected else '#1a1f36'
+        code_col = '#2563eb' if is_selected else '#6e7781'
+        mbg      = ('#dcfce7' if mape_v and mape_v < 20
+                    else '#fef9c3' if mape_v and mape_v < 30
+                    else '#fee2e2' if mape_v
+                    else '#f6f8fa')
+        mdl_bg   = '#f0f4f8'
+        mdl_col  = '#444d56'
+        mdl_bdr  = '#c1c9d2'
+
     return html.Div([
         html.Div(part_code, style={
             'fontSize': '9px', 'fontWeight': '700', 'color': code_col,
@@ -114,7 +153,7 @@ def make_mat_card(mat, idx, is_selected):
                 'borderRadius': '8px', 'marginRight': '4px'
             }),
             html.Span(short_mdl, style={
-                'background': '#161b22', 'color': '#a8b4c0', 'border': '1px solid #30363d',
+                'background': mdl_bg, 'color': mdl_col, 'border': f'1px solid {mdl_bdr}',
                 'fontSize': '9px', 'padding': '1px 7px', 'borderRadius': '8px', 'marginRight': '4px'
             }),
             html.Span(ti, style={'color': tdc, 'fontSize': '11px', 'fontWeight': '700'}),
@@ -131,7 +170,7 @@ def make_mat_card(mat, idx, is_selected):
         'transition':   'all 0.15s',
     })
 
-# ── APP INIT ─────────────────────────────────────────────────────────────────
+# ── APP INIT ───────────────────────────────────────────────────────────────────
 app = dash.Dash(__name__, external_stylesheets=[
     dbc.themes.DARKLY,
     'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'
@@ -139,52 +178,17 @@ app = dash.Dash(__name__, external_stylesheets=[
 app.title = 'Forecasting Dashboard'
 server = app.server
 
-# ── STYLES ───────────────────────────────────────────────────────────────────
-PANEL_STYLE = {
-    'width':       '220px',
-    'minWidth':    '220px',
-    'height':      'calc(100vh - 120px)',
-    'overflowY':   'auto',
-    'background':  '#0d1117',
-    'borderRight': '1px solid #1a2332',
-    'padding':     '12px 8px',
-}
-CARD_STYLE = {
-    'background':   '#0d1117',
-    'border':       '1px solid #1a2332',
-    'borderRadius': '8px',
-    'overflow':     'hidden',
-    'marginTop':    '10px',
-}
-HDR_STYLE = {
-    'padding':       '8px 14px',
-    'background':    '#161b22',
-    'borderBottom':  '1px solid #1a2332',
-    'fontSize':      '10px',
-    'fontWeight':    '700',
-    'color':         '#a8b4c0',
-    'textTransform': 'uppercase',
-    'letterSpacing': '0.7px',
-}
-ROW_STYLE = {
-    'display':        'flex',
-    'justifyContent': 'space-between',
-    'alignItems':     'center',
-    'padding':        '8px 14px',
-    'borderBottom':   '1px solid #1a2332',
-    'fontSize':       '12px',
-}
-LBL_STYLE = {'color': '#8b949e', 'fontSize': '11px'}
-VAL_STYLE  = {'fontWeight': '600', 'color': '#e6edf3', 'fontSize': '12px'}
-
-# ── LAYOUT ───────────────────────────────────────────────────────────────────
-app.layout = html.Div([
+# ── LAYOUT ────────────────────────────────────────────────────────────────────
+app.layout = html.Div(id='root-div', style={
+    'fontFamily': 'Inter,sans-serif', 'background': '#0d1117', 'minHeight': '100vh'
+}, children=[
     dcc.Store(id='selected-mats', data=[materials[0]]),
     dcc.Store(id='multi-mode',    data=False),
     dcc.Store(id='show-trend',    data=False),
+    dcc.Store(id='theme',         data='dark'),   # ← NEW
 
     # TOP BAR
-    html.Div([
+    html.Div(id='top-bar', children=[
         html.Div([
             html.Span('Forecasting Dashboard', style={
                 'fontSize': '16px', 'fontWeight': '700', 'color': '#f0f6fc', 'letterSpacing': '-0.3px'
@@ -194,6 +198,14 @@ app.layout = html.Div([
                 'paddingLeft': '12px', 'marginLeft': '12px', 'borderLeft': '1px solid #21262d'
             }),
         ], style={'display': 'flex', 'alignItems': 'center'}),
+
+        # ← THEME TOGGLE BUTTON
+        html.Div(id='theme-btn', n_clicks=0, children='☀️  Light', style={
+            'background': '#161b22', 'border': '1px solid #30363d',
+            'borderRadius': '6px', 'padding': '5px 14px',
+            'fontSize': '11px', 'fontWeight': '600', 'color': '#8b949e',
+            'cursor': 'pointer', 'userSelect': 'none',
+        }),
     ], style={
         'background': '#0d1117', 'borderBottom': '1px solid #1a2332',
         'padding': '0 28px', 'height': '52px',
@@ -201,7 +213,7 @@ app.layout = html.Div([
     }),
 
     # KPI STRIP
-    html.Div([
+    html.Div(id='kpi-strip', children=[
         html.Div([
             html.Div('Avg Model Accuracy', style={
                 'fontSize': '10px', 'fontWeight': '600', 'color': '#8b949e',
@@ -237,11 +249,11 @@ app.layout = html.Div([
         }),
     ], style={'display': 'flex', 'borderBottom': '1px solid #1a2332'}),
 
-    # MAIN CONTENT (row layout)
-    html.Div([
+    # MAIN CONTENT
+    html.Div(id='main-content', children=[
 
         # LEFT PANEL
-        html.Div([
+        html.Div(id='left-panel', children=[
             html.Div('Select Part', style={
                 'fontSize': '10px', 'fontWeight': '600', 'color': '#8b949e',
                 'textTransform': 'uppercase', 'letterSpacing': '0.8px',
@@ -255,11 +267,15 @@ app.layout = html.Div([
             }),
             html.Div([make_mat_card(mat, i, i == 0) for i, mat in enumerate(materials)],
                      id='cards-container'),
-        ], style=PANEL_STYLE),
+        ], style={
+            'width': '220px', 'minWidth': '220px',
+            'height': 'calc(100vh - 120px)', 'overflowY': 'auto',
+            'background': '#0d1117', 'borderRight': '1px solid #1a2332',
+            'padding': '12px 8px',
+        }),
 
         # RIGHT PANEL
         html.Div([
-            # Chart header row
             html.Div([
                 html.Div([
                     html.Div(id='chart-title', style={'fontSize': '15px', 'fontWeight': '600', 'color': '#f0f6fc'}),
@@ -281,24 +297,21 @@ app.layout = html.Div([
                 'justifyContent': 'space-between', 'padding': '10px 12px 4px 12px'
             }),
 
-            # Chart
             dcc.Graph(id='main-chart', config={'displayModeBar': False},
                       style={'background': '#0d1117'}),
 
-            # Bottom panels
             html.Div([
-                html.Div(id='fcast-panel',   style={**CARD_STYLE, 'flex': '1', 'marginRight': '8px'}),
-                html.Div(id='stats-panel',   style={**CARD_STYLE, 'flex': '1', 'marginRight': '8px'}),
-                html.Div(id='profile-panel', style={**CARD_STYLE, 'flex': '1'}),
+                html.Div(id='fcast-panel',   style={'flex': '1', 'marginRight': '8px'}),
+                html.Div(id='stats-panel',   style={'flex': '1', 'marginRight': '8px'}),
+                html.Div(id='profile-panel', style={'flex': '1'}),
             ], style={'display': 'flex', 'padding': '0 12px 16px 12px'}),
 
         ], style={'flex': '1', 'overflowY': 'auto', 'background': '#0d1117'}),
 
     ], style={'display': 'flex', 'flexDirection': 'row', 'height': 'calc(100vh - 120px)', 'background': '#0d1117'}),
+])
 
-], style={'fontFamily': 'Inter,sans-serif', 'background': '#0d1117', 'minHeight': '100vh'})
-
-# ── CUSTOM CSS ────────────────────────────────────────────────────────────────
+# ── CUSTOM CSS ─────────────────────────────────────────────────────────────────
 app.index_string = '''
 <!DOCTYPE html>
 <html>
@@ -327,8 +340,65 @@ app.index_string = '''
 </html>
 '''
 
-# ── CALLBACKS ────────────────────────────────────────────────────────────────
+# ── CALLBACKS ──────────────────────────────────────────────────────────────────
 
+# ── THEME TOGGLE ───────────────────────────────────────────────────────────────
+@app.callback(
+    Output('theme',        'data'),
+    Output('theme-btn',    'children'),
+    Output('theme-btn',    'style'),
+    Output('root-div',     'style'),
+    Output('top-bar',      'style'),
+    Output('kpi-strip',    'style'),
+    Output('main-content', 'style'),
+    Output('left-panel',   'style'),
+    Input('theme-btn',     'n_clicks'),
+    State('theme',         'data'),
+    prevent_initial_call=True
+)
+def toggle_theme(n, theme):
+    new = 'light' if theme == 'dark' else 'dark'
+    lbl = '🌙  Dark' if new == 'light' else '☀️  Light'
+
+    btn_style = {
+        'background':   T(new, 'surface'),
+        'border':       f'1px solid {T(new, "border3")}',
+        'borderRadius': '6px', 'padding': '5px 14px',
+        'fontSize': '11px', 'fontWeight': '600',
+        'color':        T(new, 'text4'),
+        'cursor': 'pointer', 'userSelect': 'none',
+    }
+    root_style = {
+        'fontFamily': 'Inter,sans-serif',
+        'background': T(new, 'bg'),
+        'minHeight': '100vh',
+    }
+    topbar_style = {
+        'background': T(new, 'bg'),
+        'borderBottom': f'1px solid {T(new, "border")}',
+        'padding': '0 28px', 'height': '52px',
+        'display': 'flex', 'alignItems': 'center', 'justifyContent': 'space-between'
+    }
+    kpi_style = {
+        'display': 'flex',
+        'borderBottom': f'1px solid {T(new, "border")}',
+    }
+    main_style = {
+        'display': 'flex', 'flexDirection': 'row',
+        'height': 'calc(100vh - 120px)',
+        'background': T(new, 'bg'),
+    }
+    left_style = {
+        'width': '220px', 'minWidth': '220px',
+        'height': 'calc(100vh - 120px)', 'overflowY': 'auto',
+        'background': T(new, 'bg'),
+        'borderRight': f'1px solid {T(new, "border")}',
+        'padding': '12px 8px',
+    }
+    return new, lbl, btn_style, root_style, topbar_style, kpi_style, main_style, left_style
+
+
+# ── MULTI TOGGLE ───────────────────────────────────────────────────────────────
 @app.callback(
     Output('multi-mode',    'data'),
     Output('multi-btn',     'children'),
@@ -355,15 +425,17 @@ def toggle_multi(n, is_multi, sel_mats):
     return new_multi, lbl, style, new_sel
 
 
+# ── CARD CLICK ────────────────────────────────────────────────────────────────
 @app.callback(
     Output('selected-mats',   'data'),
     Output('cards-container', 'children'),
     Input({'type': 'mat-card', 'index': dash.ALL}, 'n_clicks'),
     State('selected-mats', 'data'),
     State('multi-mode',    'data'),
+    State('theme',         'data'),   # ← NEW
     prevent_initial_call=True
 )
-def card_click(n_clicks_list, sel_mats, is_multi):
+def card_click(n_clicks_list, sel_mats, is_multi, theme):
     ctx = callback_context
     if not ctx.triggered:
         return sel_mats, dash.no_update
@@ -376,10 +448,11 @@ def card_click(n_clicks_list, sel_mats, is_multi):
             new_sel = sel_mats + [mat] if len(sel_mats) < 3 else sel_mats
     else:
         new_sel = [mat]
-    cards = [make_mat_card(m, i, m in new_sel) for i, m in enumerate(materials)]
+    cards = [make_mat_card(m, i, m in new_sel, theme) for i, m in enumerate(materials)]
     return new_sel, cards
 
 
+# ── TREND TOGGLE ──────────────────────────────────────────────────────────────
 @app.callback(
     Output('show-trend', 'data'),
     Output('trend-btn',  'children'),
@@ -403,6 +476,7 @@ def toggle_trend(n, show):
     return new_show, lbl, style
 
 
+# ── MAIN DASHBOARD ────────────────────────────────────────────────────────────
 @app.callback(
     Output('main-chart',    'figure'),
     Output('chart-title',   'children'),
@@ -411,10 +485,38 @@ def toggle_trend(n, show):
     Output('profile-panel', 'children'),
     Input('selected-mats',  'data'),
     Input('show-trend',     'data'),
+    Input('theme',          'data'),   # ← NEW
 )
-def update_dashboard(sel_mats, show_trend):
+def update_dashboard(sel_mats, show_trend, theme):
     if not sel_mats:
         sel_mats = [materials[0]]
+
+    # Dynamic styles based on theme
+    plot_bg  = T(theme, 'plot_bg')
+    grid_col = T(theme, 'grid')
+    txt_col  = T(theme, 'text4')
+    ann_col  = T(theme, 'text3')
+    bdr_col  = T(theme, 'border')
+    srf_col  = T(theme, 'surface')
+    txt2_col = T(theme, 'text2')
+
+    CARD_S = {
+        'background': srf_col, 'border': f'1px solid {bdr_col}',
+        'borderRadius': '8px', 'overflow': 'hidden', 'marginTop': '10px',
+    }
+    HDR_S = {
+        'padding': '8px 14px', 'background': T(theme, 'surface2') if theme == 'light' else '#161b22',
+        'borderBottom': f'1px solid {bdr_col}',
+        'fontSize': '10px', 'fontWeight': '700', 'color': ann_col,
+        'textTransform': 'uppercase', 'letterSpacing': '0.7px',
+    }
+    ROW_S = {
+        'display': 'flex', 'justifyContent': 'space-between', 'alignItems': 'center',
+        'padding': '8px 14px', 'borderBottom': f'1px solid {bdr_col}', 'fontSize': '12px',
+    }
+    LBL_S = {'color': txt_col,  'fontSize': '11px'}
+    VAL_S = {'fontWeight': '600', 'color': txt2_col, 'fontSize': '12px'}
+
     n_sel  = len(sel_mats)
     titles = [clean_name(m) for m in sel_mats]
     fig    = make_subplots(rows=n_sel, cols=1, subplot_titles=titles, vertical_spacing=0.1)
@@ -432,7 +534,7 @@ def update_dashboard(sel_mats, show_trend):
                 marker_color='#388bfd', opacity=0.8, showlegend=sl,
                 hovertemplate='%{x|%b %y}<br>Actual: %{y:,}<extra></extra>'), row=row, col=1)
             fig.add_trace(go.Scatter(x=tr['ds'], y=tr['fitted'], name='Rolling Avg',
-                line=dict(color='rgba(255,255,255,0.25)', width=1.5, dash='dot'),
+                line=dict(color='rgba(128,128,128,0.4)', width=1.5, dash='dot'),
                 mode='lines', showlegend=sl,
                 hovertemplate='%{x|%b %y}<br>Rolling: %{y:,}<extra></extra>'), row=row, col=1)
         if len(te) > 0:
@@ -452,27 +554,27 @@ def update_dashboard(sel_mats, show_trend):
                 act   = mdata[mdata['period'].isin(['Train', 'Test'])].sort_values('ds')
                 yt    = slope * np.arange(len(act)) + intcp
                 fig.add_trace(go.Scatter(x=act['ds'], y=yt, name='Trendline',
-                    line=dict(color='rgba(255,255,255,0.4)', width=1.5, dash='longdash'),
+                    line=dict(color='rgba(128,128,128,0.5)', width=1.5, dash='longdash'),
                     mode='lines', showlegend=sl,
                     hovertemplate='%{x|%b %y}<br>Trend: %{y:,.0f}<extra></extra>'), row=row, col=1)
             except: pass
 
     ch = 360 if n_sel == 1 else 270 * n_sel
     fig.update_layout(
-        paper_bgcolor='#0d1117', plot_bgcolor='#0d1117',
-        font=dict(color='#8b949e', size=11, family='Inter'),
+        paper_bgcolor=plot_bg, plot_bgcolor=plot_bg,
+        font=dict(color=txt_col, size=11, family='Inter'),
         legend=dict(bgcolor='rgba(0,0,0,0)', borderwidth=0,
-            font=dict(color='#8b949e', size=10),
+            font=dict(color=txt_col, size=10),
             orientation='h', yanchor='bottom', y=1.02, xanchor='left', x=0),
         height=ch, margin=dict(l=8, r=8, t=30, b=8),
         hovermode='x unified', barmode='group',
     )
-    fig.update_xaxes(gridcolor='#161b22', showgrid=True, zeroline=False,
-        tickfont=dict(color='#8b949e', size=10), tickformat='%b %y')
-    fig.update_yaxes(gridcolor='#161b22', showgrid=True, zeroline=False,
-        tickfont=dict(color='#8b949e', size=10))
+    fig.update_xaxes(gridcolor=grid_col, showgrid=True, zeroline=False,
+        tickfont=dict(color=txt_col, size=10), tickformat='%b %y')
+    fig.update_yaxes(gridcolor=grid_col, showgrid=True, zeroline=False,
+        tickfont=dict(color=txt_col, size=10))
     for ann in fig.layout.annotations:
-        ann.font.color = '#a8b4c0'
+        ann.font.color = ann_col
         ann.font.size  = 12
 
     pm   = sel_mats[0]
@@ -489,22 +591,22 @@ def update_dashboard(sel_mats, show_trend):
     for _, r in pf.iterrows():
         lb = ml.get(r['ds'].month, r['ds'].strftime('%b %Y'))
         fcast_rows.append(html.Div([
-            html.Span(lb, style={'color': '#a8b4c0', 'fontSize': '11px'}),
+            html.Span(lb, style={'color': ann_col, 'fontSize': '11px'}),
             html.Span(f"{int(r['fitted']):,} units", style={'fontWeight': '700', 'color': '#f0883e', 'fontSize': '13px'}),
-        ], style={**ROW_STYLE, 'borderBottom': '1px solid #1a2332'}))
-    fcast_panel = html.Div([html.Div('◆ Forward Forecast', style=HDR_STYLE)] + fcast_rows, style=CARD_STYLE)
+        ], style={**ROW_S, 'borderBottom': f'1px solid {bdr_col}'}))
+    fcast_panel = html.Div([html.Div('◆ Forward Forecast', style=HDR_S)] + fcast_rows, style=CARD_S)
 
     stats_rows = [
         ('Test MAPE',    html.Span(mp_s, style={'fontWeight': '600', 'color': mp_c, 'fontSize': '12px'})),
-        ('Model',        html.Span(str(pmdf['model']), style={**VAL_STYLE, 'fontSize': '10px'})),
-        ('Train Months', html.Span(str(tc), style=VAL_STYLE)),
-        ('Test Months',  html.Span(str(sc), style=VAL_STYLE)),
-        ('CV',           html.Span(f"{float(pmdf['cv']):.3f}", style=VAL_STYLE)),
-        ('ADI',          html.Span(f"{float(pmdf['adi']):.2f}", style=VAL_STYLE)),
+        ('Model',        html.Span(str(pmdf['model']), style={**VAL_S, 'fontSize': '10px'})),
+        ('Train Months', html.Span(str(tc), style=VAL_S)),
+        ('Test Months',  html.Span(str(sc), style=VAL_S)),
+        ('CV',           html.Span(f"{float(pmdf['cv']):.3f}", style=VAL_S)),
+        ('ADI',          html.Span(f"{float(pmdf['adi']):.2f}", style=VAL_S)),
     ]
-    stats_panel = html.Div([html.Div('◆ Model Statistics', style=HDR_STYLE)] + [
-        html.Div([html.Span(l, style=LBL_STYLE), v], style=ROW_STYLE) for l, v in stats_rows
-    ], style=CARD_STYLE)
+    stats_panel = html.Div([html.Div('◆ Model Statistics', style=HDR_S)] + [
+        html.Div([html.Span(l, style=LBL_S), v], style=ROW_S) for l, v in stats_rows
+    ], style=CARD_S)
 
     pt,  pc   = get_demand_pattern(pmdf['cv'], pmdf['adi'])
     td2, tdc2 = get_trend_direction(pmdf['trend_slope'])
@@ -517,16 +619,16 @@ def update_dashboard(sel_mats, show_trend):
         ('Trend Direction', html.Span(td2, style={'fontWeight': '600', 'color': tdc2, 'fontSize': '12px'})),
         ('Trend Strength',  html.Span(f'{ts} (R²={float(pmdf["r2"]):.3f})', style={'fontWeight': '600', 'color': tsc, 'fontSize': '12px'})),
         ('Seasonality',     html.Span(sn,  style={'fontWeight': '600', 'color': snc,  'fontSize': '12px'})),
-        ('Seasonal Score',  html.Span(f"{float(pmdf['seasonality_score']):.3f}", style=VAL_STYLE)),
-        ('Trend Equation',  html.Span(teq, style={'fontWeight': '600', 'color': '#8b949e', 'fontSize': '10px'})),
+        ('Seasonal Score',  html.Span(f"{float(pmdf['seasonality_score']):.3f}", style=VAL_S)),
+        ('Trend Equation',  html.Span(teq, style={'fontWeight': '600', 'color': txt_col, 'fontSize': '10px'})),
     ]
-    profile_panel = html.Div([html.Div('◆ Demand Profile', style=HDR_STYLE)] + [
-        html.Div([html.Span(l, style=LBL_STYLE), v], style=ROW_STYLE) for l, v in profile_rows
-    ], style=CARD_STYLE)
+    profile_panel = html.Div([html.Div('◆ Demand Profile', style=HDR_S)] + [
+        html.Div([html.Span(l, style=LBL_S), v], style=ROW_S) for l, v in profile_rows
+    ], style=CARD_S)
 
     title = ' · '.join([clean_name(m) for m in sel_mats])
     return fig, title, fcast_panel, stats_panel, profile_panel
 
 
 if __name__ == '__main__':
-    app.run(debug=False, port=8050) 
+    app.run(debug=False, port=8050)
