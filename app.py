@@ -8,87 +8,74 @@ import numpy as np
 import re
 import json
 
-# LOAD DATA
+# ── LOAD DATA ─────────────────────────────────────────────
 df = pd.read_json('forecast_data.json')
 df['ds'] = pd.to_datetime(df['ds'], format='mixed', dayfirst=False)
 df['mape'] = pd.to_numeric(df['mape'], errors='coerce')
 materials = df['material'].unique().tolist()
 
-# APP INIT
+# ── HELPERS ───────────────────────────────────────────────
+def clean_name(name):
+    n = str(name).strip()
+    n = re.split(r'\s*[\(\[]', n)[0].strip()
+    n = re.sub(r'(?i)\bwholesale\b.*', '', n).strip()
+    n = re.sub(r'(?i)\bqty\b.*', '', n).strip()
+    n = re.sub(r'\s+', ' ', n).strip()
+    return n.strip(' -–')
+
+def fmt_mape(v):
+    try:
+        f = float(v)
+        if np.isnan(f): return None
+        return round(f * 100 if f <= 1.0 else f, 1)
+    except:
+        return None
+
+def mape_color(v):
+    if v is None: return '#8b949e'
+    if v < 20: return '#3fb950'
+    if v < 30: return '#d29922'
+    return '#f85149'
+
+def get_demand_pattern(cv, adi):
+    try:
+        cv = float(cv); adi = float(adi)
+        if cv < 0.49 and adi < 1.32: return 'Smooth', '#3fb950'
+        elif cv >= 0.49 and adi < 1.32: return 'Erratic', '#d29922'
+        elif cv < 0.49 and adi >= 1.32: return 'Intermittent', '#d29922'
+        else: return 'Lumpy', '#f85149'
+    except:
+        return 'Unknown', '#8b949e'
+
+# ── APP INIT ──────────────────────────────────────────────
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY])
 server = app.server
 
-# SIMPLE LAYOUT (for testing first)
+# ── SIMPLE LAYOUT (TEST FIRST) ────────────────────────────
 app.layout = html.Div([
+    html.H2("Forecast Dashboard"),
+    dcc.Graph(id='chart')
+])
 
-    # KPI STRIP
-    html.Div([
-        html.Div(id='kpi-accuracy', className='kpi-card'),
-        html.Div(id='kpi-materials', className='kpi-card'),
-    ], style={'display':'flex','gap':'12px','padding':'12px'}),
-
-    # MAIN LAYOUT
-    html.Div([
-
-        # LEFT PANEL
-        html.Div([
-            html.H4("Materials", style={'color':'white'}),
-            dcc.Dropdown(
-                id='material-dropdown',
-                options=[{'label':m, 'value':m} for m in materials],
-                value=materials[0],
-                style={'background':'#161b22','color':'black'}
-            )
-        ], style={'width':'25%','padding':'10px'}),
-
-        # RIGHT PANEL
-        html.Div([
-
-            html.H3(id='material-title', style={'color':'white'}),
-
-            dcc.Graph(id='main-chart'),
-
-            html.Div(id='insights', style={'color':'white','padding':'10px'})
-
-        ], style={'width':'75%','padding':'10px'})
-
-    ], style={'display':'flex'})
-
-], style={'background':'#0d1117','minHeight':'100vh'}) 
+# ── CALLBACK (TEST) ───────────────────────────────────────
 @app.callback(
-    Output('main-chart','figure'),
-    Output('material-title','children'),
-    Output('insights','children'),
-    Input('material-dropdown','value')
+    Output('chart', 'figure'),
+    Input('chart', 'id')
 )
-def update_dashboard(mat):
-
-    dff = df[df['material'] == mat]
-
+def update_chart(_):
     fig = go.Figure()
 
-    fig.add_trace(go.Scatter(
-        x=dff['ds'], y=dff['actual'],
-        mode='lines+markers', name='Actual', line=dict(color='blue')
-    ))
+    for mat in materials[:3]:
+        mdata = df[df['material'] == mat]
+        fig.add_trace(go.Scatter(
+            x=mdata['ds'],
+            y=mdata['y'],
+            mode='lines',
+            name=mat
+        ))
 
-    fig.add_trace(go.Scatter(
-        x=dff['ds'], y=dff['forecast'],
-        mode='lines+markers', name='Forecast', line=dict(color='orange')
-    ))
+    return fig
 
-    fig.update_layout(
-        template='plotly_dark',
-        paper_bgcolor='#0d1117',
-        plot_bgcolor='#0d1117'
-    )
-
-    trend = "Moderate"  # placeholder
-    seasonality = "Weak"
-
-    insights = f"Trend: {trend} | Seasonality: {seasonality}"
-
-    return fig, f"Material: {mat}", insights
-
+# ── RUN ──────────────────────────────────────────────────
 if __name__ == '__main__':
-    app.run(debug=False, port=8050)
+    app.run(debug=False) 
