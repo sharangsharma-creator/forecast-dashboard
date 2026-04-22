@@ -141,21 +141,38 @@ server = app.server
 
 # ── STYLES ───────────────────────────────────────────────────────────────────
 PANEL_STYLE = {
-    'height': 'calc(100vh - 120px)', 'overflowY': 'auto',
-    'background': '#0d1117', 'borderRight': '1px solid #1a2332', 'padding': '12px 8px',
+    'width':       '220px',
+    'minWidth':    '220px',
+    'height':      'calc(100vh - 120px)',
+    'overflowY':   'auto',
+    'background':  '#0d1117',
+    'borderRight': '1px solid #1a2332',
+    'padding':     '12px 8px',
 }
 CARD_STYLE = {
-    'background': '#0d1117', 'border': '1px solid #1a2332',
-    'borderRadius': '8px', 'overflow': 'hidden', 'marginTop': '10px',
+    'background':   '#0d1117',
+    'border':       '1px solid #1a2332',
+    'borderRadius': '8px',
+    'overflow':     'hidden',
+    'marginTop':    '10px',
 }
 HDR_STYLE = {
-    'padding': '8px 14px', 'background': '#161b22', 'borderBottom': '1px solid #1a2332',
-    'fontSize': '10px', 'fontWeight': '700', 'color': '#a8b4c0',
-    'textTransform': 'uppercase', 'letterSpacing': '0.7px',
+    'padding':       '8px 14px',
+    'background':    '#161b22',
+    'borderBottom':  '1px solid #1a2332',
+    'fontSize':      '10px',
+    'fontWeight':    '700',
+    'color':         '#a8b4c0',
+    'textTransform': 'uppercase',
+    'letterSpacing': '0.7px',
 }
 ROW_STYLE = {
-    'display': 'flex', 'justifyContent': 'space-between', 'alignItems': 'center',
-    'padding': '8px 14px', 'borderBottom': '1px solid #1a2332', 'fontSize': '12px',
+    'display':        'flex',
+    'justifyContent': 'space-between',
+    'alignItems':     'center',
+    'padding':        '8px 14px',
+    'borderBottom':   '1px solid #1a2332',
+    'fontSize':       '12px',
 }
 LBL_STYLE = {'color': '#8b949e', 'fontSize': '11px'}
 VAL_STYLE  = {'fontWeight': '600', 'color': '#e6edf3', 'fontSize': '12px'}
@@ -166,6 +183,7 @@ app.layout = html.Div([
     dcc.Store(id='multi-mode',    data=False),
     dcc.Store(id='show-trend',    data=False),
 
+    # TOP BAR
     html.Div([
         html.Div([
             html.Span('Forecasting Dashboard', style={
@@ -182,6 +200,7 @@ app.layout = html.Div([
         'display': 'flex', 'alignItems': 'center', 'justifyContent': 'space-between'
     }),
 
+    # KPI STRIP
     html.Div([
         html.Div([
             html.Div('Avg Model Accuracy', style={
@@ -218,7 +237,10 @@ app.layout = html.Div([
         }),
     ], style={'display': 'flex', 'borderBottom': '1px solid #1a2332'}),
 
+    # MAIN CONTENT (row layout)
     html.Div([
+
+        # LEFT PANEL
         html.Div([
             html.Div('Select Part', style={
                 'fontSize': '10px', 'fontWeight': '600', 'color': '#8b949e',
@@ -235,7 +257,9 @@ app.layout = html.Div([
                      id='cards-container'),
         ], style=PANEL_STYLE),
 
+        # RIGHT PANEL
         html.Div([
+            # Chart header row
             html.Div([
                 html.Div([
                     html.Div(id='chart-title', style={'fontSize': '15px', 'fontWeight': '600', 'color': '#f0f6fc'}),
@@ -257,9 +281,11 @@ app.layout = html.Div([
                 'justifyContent': 'space-between', 'padding': '10px 12px 4px 12px'
             }),
 
+            # Chart
             dcc.Graph(id='main-chart', config={'displayModeBar': False},
                       style={'background': '#0d1117'}),
 
+            # Bottom panels
             html.Div([
                 html.Div(id='fcast-panel',   style={**CARD_STYLE, 'flex': '1', 'marginRight': '8px'}),
                 html.Div(id='stats-panel',   style={**CARD_STYLE, 'flex': '1', 'marginRight': '8px'}),
@@ -268,7 +294,7 @@ app.layout = html.Div([
 
         ], style={'flex': '1', 'overflowY': 'auto', 'background': '#0d1117'}),
 
-    ], style={'display': 'flex', 'flexDirection': 'column', 'height': '100vh', 'background': '#0d1117'}),
+    ], style={'display': 'flex', 'flexDirection': 'row', 'height': 'calc(100vh - 120px)', 'background': '#0d1117'}),
 
 ], style={'fontFamily': 'Inter,sans-serif', 'background': '#0d1117', 'minHeight': '100vh'})
 
