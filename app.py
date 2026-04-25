@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import dash
 from dash import dcc, html, Input, Output, State, callback_context
 import dash_bootstrap_components as dbc
@@ -24,7 +25,7 @@ def clean_name(name):
     n = re.sub(r'(?i)\bwholesale\b.*', '', n).strip()
     n = re.sub(r'(?i)\bqty\b.*', '', n).strip()
     n = re.sub(r'\s+', ' ', n).strip()
-    return n.strip(' -')
+    return n.strip(' -–')
 
 def fmt_mape(v):
     try:
@@ -63,13 +64,13 @@ def get_trend_direction(slope):
     try:
         s = float(slope)
         if s > 10:
-            return 'Upward', '#3fb950'
+            return '▲ Upward', '#3fb950'
         elif s < -10:
-            return 'Downward', '#f85149'
+            return '▼ Downward', '#f85149'
         else:
-            return 'Flat', '#8b949e'
+            return '→ Flat', '#8b949e'
     except:
-        return 'Flat', '#8b949e'
+        return '→ Flat', '#8b949e'
 
 def get_trend_strength(r2):
     try:
@@ -115,6 +116,7 @@ def make_mat_card(mat, idx, is_selected):
     mc        = mape_color(100 - mape_v if mape_v is not None else None)
     mape_str  = f'{mape_v:.1f}%' if mape_v else 'N/A'
     td, tdc   = get_trend_direction(row0['trend_slope'])
+    ti        = td.split()[0]
     card_bg   = '#111d2e' if is_selected else '#0d1117'
     card_bl   = '2px solid #388bfd' if is_selected else '1px solid #21262d'
     name_col  = '#79c0ff' if is_selected else '#e6edf3'
@@ -144,7 +146,7 @@ def make_mat_card(mat, idx, is_selected):
                 'background': '#161b22', 'color': '#a8b4c0', 'border': '1px solid #30363d',
                 'fontSize': '9px', 'padding': '1px 7px', 'borderRadius': '8px', 'marginRight': '4px'
             }),
-            html.Span(td, style={'color': tdc, 'fontSize': '10px', 'fontWeight': '700'}),
+            html.Span(ti, style={'color': tdc, 'fontSize': '11px', 'fontWeight': '700'}),
         ], style={'display': 'flex', 'alignItems': 'center', 'flexWrap': 'wrap'})
     ],
     id={'type': 'mat-card', 'index': idx},
@@ -205,11 +207,20 @@ ROW_STYLE = {
 LBL_STYLE = {'color': '#8b949e', 'fontSize': '11px'}
 VAL_STYLE  = {'fontWeight': '600', 'color': '#e6edf3', 'fontSize': '12px'}
 
+SORT_BTN_BASE = {
+    'fontSize': '10px', 'fontWeight': '600', 'padding': '3px 10px',
+    'borderRadius': '4px', 'cursor': 'pointer', 'userSelect': 'none',
+    'marginLeft': '4px', 'transition': 'all 0.15s',
+}
+SORT_BTN_ON  = {**SORT_BTN_BASE, 'background': '#1a3a5c', 'color': '#79c0ff', 'border': '1px solid #388bfd'}
+SORT_BTN_OFF = {**SORT_BTN_BASE, 'background': '#161b22', 'color': '#6e7681',  'border': '1px solid #30363d'}
+
 # -- LAYOUT -------------------------------------------------------------------
 app.layout = html.Div([
     dcc.Store(id='selected-mats', data=[materials[0]]),
     dcc.Store(id='multi-mode',    data=False),
     dcc.Store(id='show-trend',    data=False),
+    dcc.Store(id='comp-sort',     data='error_desc'),
 
     # TOP BAR
     html.Div([
@@ -217,7 +228,7 @@ app.layout = html.Div([
             html.Span('Forecasting Dashboard', style={
                 'fontSize': '16px', 'fontWeight': '700', 'color': '#f0f6fc', 'letterSpacing': '-0.3px'
             }),
-            html.Span('Ather Energy - Accessories - FY26', style={
+            html.Span('Ather Energy · Accessories · FY26', style={
                 'fontSize': '11px', 'color': '#8b949e',
                 'paddingLeft': '12px', 'marginLeft': '12px', 'borderLeft': '1px solid #21262d'
             }),
@@ -274,7 +285,7 @@ app.layout = html.Div([
                 'textTransform': 'uppercase', 'letterSpacing': '0.8px',
                 'paddingBottom': '8px', 'borderBottom': '1px solid #1a2332', 'marginBottom': '8px'
             }),
-            html.Div(id='multi-btn', n_clicks=0, children='Multi-Select: OFF', style={
+            html.Div(id='multi-btn', n_clicks=0, children='☐  Multi-Select: OFF', style={
                 'background': '#161b22', 'border': '1px solid #30363d', 'borderRadius': '5px',
                 'padding': '7px 12px', 'fontSize': '11px', 'fontWeight': '600',
                 'color': '#8b949e', 'cursor': 'pointer', 'marginBottom': '8px',
@@ -293,21 +304,13 @@ app.layout = html.Div([
                         'fontSize': '15px', 'fontWeight': '600', 'color': '#f0f6fc'
                     }),
                     html.Div([
-                        html.Span('Actual (Train)', style={
-                            'color': '#388bfd', 'fontSize': '11px', 'marginRight': '12px'
-                        }),
-                        html.Span('Actual (Test)', style={
-                            'color': '#1D9E75', 'fontSize': '11px', 'marginRight': '12px'
-                        }),
-                        html.Span('Forecast', style={
-                            'color': '#f0883e', 'fontSize': '11px', 'marginRight': '12px'
-                        }),
-                        html.Span('Trend', style={
-                            'color': 'rgba(255,255,255,0.4)', 'fontSize': '11px'
-                        }),
+                        html.Span('■ Actual (Train)', style={'color': '#388bfd',  'fontSize': '11px', 'marginRight': '12px'}),
+                        html.Span('■ Actual (Test)',  style={'color': '#1D9E75',  'fontSize': '11px', 'marginRight': '12px'}),
+                        html.Span('■ Forecast',       style={'color': '#f0883e',  'fontSize': '11px', 'marginRight': '12px'}),
+                        html.Span('— Trend',          style={'color': 'rgba(255,255,255,0.4)', 'fontSize': '11px'}),
                     ], style={'marginTop': '3px'}),
                 ], style={'flex': '1'}),
-                html.Div(id='trend-btn', n_clicks=0, children='Trendline: OFF', style={
+                html.Div(id='trend-btn', n_clicks=0, children='□  Trendline', style={
                     'background': '#161b22', 'border': '1px solid #30363d', 'borderRadius': '6px',
                     'padding': '6px 14px', 'fontSize': '11px', 'fontWeight': '600',
                     'color': '#8b949e', 'cursor': 'pointer', 'userSelect': 'none',
@@ -331,22 +334,31 @@ app.layout = html.Div([
 
             # APRIL COMPARISON CHART
             html.Div([
+                # Header row with title, legend and sort buttons
                 html.Div([
-                    html.Span('April 2026 - Forecast vs Actual', style={
-                        'fontSize': '10px', 'fontWeight': '700', 'color': '#a8b4c0',
-                        'textTransform': 'uppercase', 'letterSpacing': '0.7px',
-                    }),
                     html.Div([
-                        html.Span('Forecast  ', style={
-                            'color': '#f0883e', 'fontSize': '11px', 'marginRight': '16px'
+                        html.Span('◆ April 2026 — Forecast vs Actual', style={
+                            'fontSize': '10px', 'fontWeight': '700', 'color': '#a8b4c0',
+                            'textTransform': 'uppercase', 'letterSpacing': '0.7px',
                         }),
-                        html.Span('Actual', style={
-                            'color': '#3fb950', 'fontSize': '11px'
-                        }),
+                        html.Div([
+                            html.Span('■ Forecast', style={'color': '#f0883e', 'fontSize': '10px', 'marginRight': '10px'}),
+                            html.Span('■ Actual (≤ 10% err)', style={'color': '#3fb950', 'fontSize': '10px', 'marginRight': '10px'}),
+                            html.Span('■ Actual (10–25%)',     style={'color': '#d29922', 'fontSize': '10px', 'marginRight': '10px'}),
+                            html.Span('■ Actual (> 25%)',           style={'color': '#f85149', 'fontSize': '10px'}),
+                        ], style={'marginTop': '4px'}),
                     ]),
+                    # Sort buttons
+                    html.Div([
+                        html.Span('Sort:', style={'color': '#6e7681', 'fontSize': '10px', 'marginRight': '4px'}),
+                        html.Div('Error ↓', id='sort-err-desc', n_clicks=0, style=SORT_BTN_ON),
+                        html.Div('Error ↑', id='sort-err-asc',  n_clicks=0, style=SORT_BTN_OFF),
+                        html.Div('Value',        id='sort-value',    n_clicks=0, style=SORT_BTN_OFF),
+                        html.Div('A → Z',   id='sort-name',     n_clicks=0, style=SORT_BTN_OFF),
+                    ], style={'display': 'flex', 'alignItems': 'center'}),
                 ], style={
-                    'display': 'flex', 'justifyContent': 'space-between', 'alignItems': 'center',
-                    'padding': '8px 14px', 'background': '#161b22',
+                    'display': 'flex', 'justifyContent': 'space-between', 'alignItems': 'flex-start',
+                    'padding': '10px 14px', 'background': '#161b22',
                     'borderBottom': '1px solid #1a2332',
                 }),
                 dcc.Graph(
@@ -414,7 +426,7 @@ app.index_string = (
 def toggle_multi(n, is_multi, sel_mats):
     new_multi = not is_multi
     new_sel   = sel_mats if new_multi else [sel_mats[0]]
-    lbl   = 'Multi-Select: ON' if new_multi else 'Multi-Select: OFF'
+    lbl   = '✓  Multi-Select: ON' if new_multi else '☐  Multi-Select: OFF'
     style = {
         'background':   '#111d2e' if new_multi else '#161b22',
         'border':       '1px solid #388bfd' if new_multi else '1px solid #30363d',
@@ -462,7 +474,7 @@ def card_click(n_clicks_list, sel_mats, is_multi):
 )
 def toggle_trend(n, show):
     new_show = not show
-    lbl   = 'Trendline: ON' if new_show else 'Trendline: OFF'
+    lbl   = '■  Trendline: ON' if new_show else '□  Trendline'
     style = {
         'background':   '#1c2128' if new_show else '#161b22',
         'border':       '1px solid rgba(255,255,255,0.25)' if new_show else '1px solid #30363d',
@@ -473,6 +485,38 @@ def toggle_trend(n, show):
         'whiteSpace': 'nowrap', 'alignSelf': 'center',
     }
     return new_show, lbl, style
+
+
+@app.callback(
+    Output('comp-sort',      'data'),
+    Output('sort-err-desc',  'style'),
+    Output('sort-err-asc',   'style'),
+    Output('sort-value',     'style'),
+    Output('sort-name',      'style'),
+    Input('sort-err-desc',   'n_clicks'),
+    Input('sort-err-asc',    'n_clicks'),
+    Input('sort-value',      'n_clicks'),
+    Input('sort-name',       'n_clicks'),
+    State('comp-sort',       'data'),
+    prevent_initial_call=True
+)
+def update_sort(n1, n2, n3, n4, current):
+    ctx = callback_context
+    if not ctx.triggered:
+        return current, SORT_BTN_ON, SORT_BTN_OFF, SORT_BTN_OFF, SORT_BTN_OFF
+    btn_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    mapping = {
+        'sort-err-desc': 'error_desc',
+        'sort-err-asc':  'error_asc',
+        'sort-value':    'value_desc',
+        'sort-name':     'name_asc',
+    }
+    new_sort = mapping.get(btn_id, 'error_desc')
+    styles = [
+        SORT_BTN_ON if k == btn_id else SORT_BTN_OFF
+        for k in ['sort-err-desc', 'sort-err-asc', 'sort-value', 'sort-name']
+    ]
+    return new_sort, styles[0], styles[1], styles[2], styles[3]
 
 
 @app.callback(
@@ -584,7 +628,7 @@ def update_dashboard(sel_mats, show_trend):
             ),
         ], style={**ROW_STYLE, 'borderBottom': '1px solid #1a2332'}))
     fcast_panel = html.Div(
-        [html.Div('Forward Forecast', style=HDR_STYLE)] + fcast_rows,
+        [html.Div('◆ Forward Forecast', style=HDR_STYLE)] + fcast_rows,
         style=CARD_STYLE
     )
 
@@ -597,7 +641,7 @@ def update_dashboard(sel_mats, show_trend):
         ('ADI',          html.Span(f"{float(pmdf['adi']):.2f}", style=VAL_STYLE)),
     ]
     stats_panel = html.Div(
-        [html.Div('Model Statistics', style=HDR_STYLE)] + [
+        [html.Div('◆ Model Statistics', style=HDR_STYLE)] + [
             html.Div([html.Span(l, style=LBL_STYLE), v], style=ROW_STYLE)
             for l, v in stats_rows
         ],
@@ -616,7 +660,7 @@ def update_dashboard(sel_mats, show_trend):
         ('Demand Pattern',  html.Span(pt,  style={'fontWeight': '600', 'color': pc2,  'fontSize': '12px'})),
         ('Trend Direction', html.Span(td2, style={'fontWeight': '600', 'color': tdc2, 'fontSize': '12px'})),
         ('Trend Strength',  html.Span(
-            f'{ts} (R2={float(pmdf["r2"]):.3f})',
+            f'{ts} (R²={float(pmdf["r2"]):.3f})',
             style={'fontWeight': '600', 'color': tsc, 'fontSize': '12px'}
         )),
         ('Seasonality',     html.Span(sn,  style={'fontWeight': '600', 'color': snc,  'fontSize': '12px'})),
@@ -624,29 +668,24 @@ def update_dashboard(sel_mats, show_trend):
         ('Trend Equation',  html.Span(teq, style={'fontWeight': '600', 'color': '#8b949e', 'fontSize': '10px'})),
     ]
     profile_panel = html.Div(
-        [html.Div('Demand Profile', style=HDR_STYLE)] + [
+        [html.Div('◆ Demand Profile', style=HDR_STYLE)] + [
             html.Div([html.Span(l, style=LBL_STYLE), v], style=ROW_STYLE)
             for l, v in profile_rows
         ],
         style=CARD_STYLE
     )
 
-    title = ' - '.join([clean_name(m) for m in sel_mats])
+    title = ' · '.join([clean_name(m) for m in sel_mats])
     return fig, title, fcast_panel, stats_panel, profile_panel
 
 
 @app.callback(
     Output('april-comparison-chart', 'figure'),
     Input('selected-mats', 'data'),
+    Input('comp-sort',     'data'),
 )
-def update_comparison(sel_mats):
-    labels     = []
-    forecasts  = []
-    actuals    = []
-    errors     = []
-    colors_fc  = []
-    colors_ac  = []
-
+def update_comparison(sel_mats, sort_by):
+    rows = []
     for mat in materials:
         row      = df[df['material'] == mat].iloc[0]
         pc       = str(row['part_code']).strip()
@@ -659,12 +698,80 @@ def update_comparison(sel_mats):
         er_v  = (float(crow['error_pct'].iloc[0])
                  if len(crow) > 0 and pd.notna(crow['error_pct'].iloc[0]) else None)
 
-        labels.append(clean_name(mat))
-        forecasts.append(fc_v)
-        actuals.append(ac_v)
-        errors.append(er_v)
-        colors_fc.append('#f0883e' if selected else 'rgba(240,136,62,0.25)')
-        colors_ac.append('#3fb950' if selected else 'rgba(63,185,80,0.25)')
+        if fc_v and ac_v:
+            direction = 'Over-forecast' if fc_v > ac_v else 'Under-forecast'
+            diff      = abs(fc_v - ac_v)
+        else:
+            direction = 'N/A'
+            diff      = 0
+
+        rows.append({
+            'label':     clean_name(mat),
+            'forecast':  fc_v,
+            'actual':    ac_v,
+            'error':     er_v,
+            'selected':  selected,
+            'direction': direction,
+            'diff':      diff,
+        })
+
+    # Sort
+    if sort_by == 'error_desc':
+        rows.sort(key=lambda x: x['error'] if x['error'] is not None else -1, reverse=True)
+    elif sort_by == 'error_asc':
+        rows.sort(key=lambda x: x['error'] if x['error'] is not None else 999)
+    elif sort_by == 'value_desc':
+        rows.sort(key=lambda x: x['forecast'], reverse=True)
+    elif sort_by == 'name_asc':
+        rows.sort(key=lambda x: x['label'])
+
+    labels     = [r['label']    for r in rows]
+    forecasts  = [r['forecast'] for r in rows]
+    actuals    = [r['actual']   for r in rows]
+    errors     = [r['error']    for r in rows]
+
+    # Forecast bar colors — orange for selected, dimmed otherwise
+    colors_fc = [
+        '#f0883e' if r['selected'] else 'rgba(240,136,62,0.2)'
+        for r in rows
+    ]
+
+    # Actual bar colors — graded by error severity
+    def actual_color(r):
+        e = r['error']
+        sel = r['selected']
+        if e is None:
+            return '#8b949e' if sel else 'rgba(139,148,158,0.2)'
+        if e <= 10:
+            return '#3fb950' if sel else 'rgba(63,185,80,0.2)'
+        if e <= 25:
+            return '#d29922' if sel else 'rgba(210,153,34,0.2)'
+        return '#f85149' if sel else 'rgba(248,81,73,0.2)'
+
+    colors_ac = [actual_color(r) for r in rows]
+
+    # Error % labels shown above actual bars
+    error_text = [
+        f'{e:.0f}%' if e is not None else ''
+        for e in errors
+    ]
+
+    # Rich hover text
+    hover_fc = [
+        (f'<b>{r["label"]}</b><br>'
+         f'Forecast: {r["forecast"]:,}<br>'
+         f'{r["direction"]} by {r["diff"]:,} units')
+        for r in rows
+    ]
+    hover_ac = [
+        (f'<b>{r["label"]}</b><br>'
+         f'Actual: {r["actual"]:,}<br>'
+         f'Error: {r["error"]:.1f}%<br>'
+         f'{r["direction"]} by {r["diff"]:,} units')
+        if r['error'] is not None
+        else f'<b>{r["label"]}</b><br>Actual: {r["actual"]:,}'
+        for r in rows
+    ]
 
     fig = go.Figure()
     fig.add_trace(go.Bar(
@@ -673,7 +780,8 @@ def update_comparison(sel_mats):
         y=forecasts,
         marker_color=colors_fc,
         marker_line_width=0,
-        hovertemplate='<b>%{x}</b><br>Forecast: %{y:,}<extra></extra>',
+        hovertemplate='%{customdata}<extra></extra>',
+        customdata=hover_fc,
     ))
     fig.add_trace(go.Bar(
         name='Actual (Apr)',
@@ -681,8 +789,11 @@ def update_comparison(sel_mats):
         y=actuals,
         marker_color=colors_ac,
         marker_line_width=0,
-        customdata=errors,
-        hovertemplate='<b>%{x}</b><br>Actual: %{y:,}<br>Error: %{customdata:.1f}%<extra></extra>',
+        text=error_text,
+        textposition='outside',
+        textfont=dict(color='#6e7681', size=8),
+        hovertemplate='%{customdata}<extra></extra>',
+        customdata=hover_ac,
     ))
 
     fig.update_layout(
@@ -690,16 +801,16 @@ def update_comparison(sel_mats):
         plot_bgcolor='#0d1117',
         font=dict(color='#8b949e', size=10, family='Inter'),
         barmode='group',
-        height=300,
-        margin=dict(l=8, r=8, t=12, b=90),
+        height=320,
+        margin=dict(l=8, r=8, t=24, b=90),
         legend=dict(
             bgcolor='rgba(0,0,0,0)', borderwidth=0,
             font=dict(color='#8b949e', size=10),
             orientation='h', yanchor='bottom', y=1.02, xanchor='left', x=0,
         ),
-        hovermode='x unified',
-        bargap=0.25,
-        bargroupgap=0.05,
+        hovermode='closest',
+        bargap=0.2,
+        bargroupgap=0.04,
     )
     fig.update_xaxes(
         gridcolor='#161b22', zeroline=False,
