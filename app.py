@@ -86,7 +86,7 @@ def make_mat_card(mat, idx, is_selected):
     model_raw = str(row0['model'])
     short_mdl = model_raw.split('(')[0].strip()[:16]
     mape_v    = fmt_mape(row0['mape'])
-    mc        = mape_color(mape_v)
+    mc = mape_color(100 - mape_v if mape_v is not None else None)
     mape_str  = f'{mape_v:.1f}%' if mape_v else 'N/A'
     td, tdc   = get_trend_direction(row0['trend_slope'])
     ti        = td.split()[0]
@@ -479,7 +479,7 @@ def update_dashboard(sel_mats, show_trend):
     pmdf = df[df['material'] == pm].iloc[0]
     pf   = df[(df['material'] == pm) & (df['period'] == 'Forecast')].sort_values('ds')
     mp_v = fmt_mape(pmdf['mape'])
-    mp_c = mape_color(mp_v)
+    mp_c = mape_color(100 - mp_v if mp_v is not None else None)
     mp_s = f'{mp_v:.1f}%' if mp_v else 'N/A'
     tc   = len(df[(df['material'] == pm) & (df['period'] == 'Train')])
     sc   = len(df[(df['material'] == pm) & (df['period'] == 'Test')])
@@ -529,4 +529,4 @@ def update_dashboard(sel_mats, show_trend):
 
 
 if __name__ == '__main__':
-    app.run(debug=False, port=8050)
+    app.run(debug=False, port=8050) 
