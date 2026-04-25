@@ -1,0 +1,142 @@
+[
+  {
+    "part_code":"AM00000060",
+    "material_description":"Seat Cover Wholesale Qty (released)",
+    "forecast_april":4697.4999918293,
+    "actual_april":4510,
+    "error_pct":4.2
+  },
+  {
+    "part_code":"AM00000064",
+    "material_description":"Body-guard Wholesale Qty (released)",
+    "forecast_april":742.7878261168,
+    "actual_april":670,
+    "error_pct":10.9
+  },
+  {
+    "part_code":"AM00000066",
+    "material_description":"Floor-mat Wholesale Qty (released)",
+    "forecast_april":4830.2488129673,
+    "actual_april":4490,
+    "error_pct":7.6
+  },
+  {
+    "part_code":"AM00000084",
+    "material_description":"Grip Cover Wholesale Qty (released)",
+    "forecast_april":4768.5282738939,
+    "actual_april":4980,
+    "error_pct":4.2
+  },
+  {
+    "part_code":"AM00000086",
+    "material_description":"Care Kit Wholesale Qty (released)",
+    "forecast_april":150.015016226,
+    "actual_april":80,
+    "error_pct":87.5
+  },
+  {
+    "part_code":"AM00000087",
+    "material_description":"Scooter Cover Wholesale Qty (released)",
+    "forecast_april":408.863323125,
+    "actual_april":310,
+    "error_pct":31.9
+  },
+  {
+    "part_code":"AM00000092",
+    "material_description":"Rizta Bodyguard Wholesale Qty (released)",
+    "forecast_april":12763.3079898557,
+    "actual_april":11920,
+    "error_pct":7.1
+  },
+  {
+    "part_code":"AM00000132",
+    "material_description":"Rizta MPC Wholesale Qty (released)",
+    "forecast_april":360.0,
+    "actual_april":18,
+    "error_pct":1900.0
+  },
+  {
+    "part_code":"AM00000161",
+    "material_description":"Halo Bit Wholesale Qty (released)",
+    "forecast_april":190.453783095,
+    "actual_april":149,
+    "error_pct":27.8
+  },
+  {
+    "part_code":"AM00000209",
+    "material_description":"Rizta Frunk Wholesale Qty (released)",
+    "forecast_april":408.3795931553,
+    "actual_april":430,
+    "error_pct":5.0
+  },
+  {
+    "part_code":"AM00000210",
+    "material_description":"Rizta Storage Organiser Wholesale Qty (released)",
+    "forecast_april":491.4752402881,
+    "actual_april":510,
+    "error_pct":3.6
+  },
+  {
+    "part_code":"AM00000258",
+    "material_description":"Rizta Scooter Cover Wholesale Qty (released)",
+    "forecast_april":1179.0745085677,
+    "actual_april":790,
+    "error_pct":49.2
+  },
+  {
+    "part_code":"AM00000395",
+    "material_description":"Rizta Seat Cover Wholesale Qty (released)",
+    "forecast_april":12985.2318492014,
+    "actual_april":12290,
+    "error_pct":5.7
+  },
+  {
+    "part_code":"AM00000450",
+    "material_description":"Rizta Backrest Wholesale Qty (released)",
+    "forecast_april":4979.1,
+    "actual_april":2887,
+    "error_pct":72.5
+  },
+  {
+    "part_code":"AM00000926",
+    "material_description":"Jr Helmet Wholesale Qty (released)",
+    "forecast_april":965.0,
+    "actual_april":316,
+    "error_pct":205.4
+  },
+  {
+    "part_code":"AM0011A001MNN",
+    "material_description":"Side-step Wholesale Qty (released)",
+    "forecast_april":18544.1064988575,
+    "actual_april":16910,
+    "error_pct":9.7
+  },
+  {
+    "part_code":"AM0809E002MNN",
+    "material_description":"TPMS Wholesale Qty (released)",
+    "forecast_april":274.2,
+    "actual_april":179,
+    "error_pct":53.2
+  },
+  {
+    "part_code":"AMAM000402",
+    "material_description":"Rizta Floor-mat Wholesale Qty (released)",
+    "forecast_april":12837.3971389848,
+    "actual_april":10010,
+    "error_pct":28.2
+  },
+  {
+    "part_code":"BE9999Z001ANN",
+    "material_description":"Frunk Wholesale Qty (released)",
+    "forecast_april":505.4243713665,
+    "actual_april":400,
+    "error_pct":26.4
+  },
+  {
+    "part_code":"PCAM000204",
+    "material_description":"Wall Mount Wholesale Qty (released)",
+    "forecast_april":206.0,
+    "actual_april":152,
+    "error_pct":35.5
+  }
+]
