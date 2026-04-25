@@ -30,11 +30,11 @@ def fmt_mape(v):
         return round(f * 100 if f <= 1.0 else f, 1)
     except: return None
 
-def mape_color(v):
-    if v is None: return '#8b949e'
-    if v < 20: return '#3fb950'
-    if v < 30: return '#d29922'
-    return '#f85149'
+def mape_color(acc):
+    if acc is None: return '#8b949e'
+    if acc >= 80: return '#3fb950'   # green  — good
+    if acc >= 70: return '#d29922'   # amber  — okay
+    return '#f85149'                 # red    — poor
 
 def get_demand_pattern(cv, adi):
     try:
@@ -74,7 +74,7 @@ def get_seasonality(flag, score):
 # ── KPI VALUES ───────────────────────────────────────────────────────────────
 mapes    = [fmt_mape(df[df['material'] == m]['mape'].iloc[0]) for m in materials]
 valid_m  = [x for x in mapes if x is not None]
-avg_mape = round(np.mean(valid_m), 1) if valid_m else 0
+avg_mape = round(100 - np.mean(valid_m), 1) if valid_m else 0
 n_mats   = len(materials)
 mc_avg   = mape_color(avg_mape)
 
@@ -211,7 +211,7 @@ app.layout = html.Div([
                 'fontSize': '28px', 'fontWeight': '700', 'color': mc_avg,
                 'lineHeight': '1', 'letterSpacing': '-0.5px'
             }),
-            html.Div('average test MAPE across all models', style={
+            html.Div('average model accuracy across all parts', style={
                 'fontSize': '10px', 'color': '#8b949e', 'marginTop': '3px'
             }),
         ], style={
@@ -529,4 +529,4 @@ def update_dashboard(sel_mats, show_trend):
 
 
 if __name__ == '__main__':
-    app.run(debug=False, port=8050) 
+    app.run(debug=False, port=8050)
