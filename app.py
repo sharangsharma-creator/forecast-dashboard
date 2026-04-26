@@ -225,15 +225,23 @@ app.layout = html.Div([
     # TOP BAR
     html.Div([
         html.Div([
-            # Ather logo — exact SVG spec
-            dcc.Markdown(
-                '<svg viewBox="0 0 97 20" height="20px" xmlns="http://www.w3.org/2000/svg">'
-                '<text font-family="\'Poppins\', sans-serif" font-weight="600" font-size="16" '
-                'letter-spacing="1" textLength="95" lengthAdjust="spacingAndGlyphs" '
-                'fill="#ffffff" x="0" y="17">ATHER</text>'
-                '</svg>',
-                dangerously_allow_html=True,
-                style={'lineHeight': '0', 'margin': '0', 'display': 'flex', 'alignItems': 'center', 'height': '20px'}
+            # Ather logo — 20px container matches SVG height spec
+            html.Div(
+                html.Span('ATHER', style={
+                    'fontFamily':    "'Poppins', sans-serif",
+                    'fontWeight':    '600',
+                    'fontSize':      '16px',
+                    'letterSpacing': '8px',
+                    'color':         '#ffffff',
+                    'lineHeight':    '1',
+                    'display':       'block',
+                }),
+                style={
+                    'height':     '20px',
+                    'display':    'flex',
+                    'alignItems': 'center',
+                    'overflow':   'hidden',
+                }
             ),
             # Vertical divider
             html.Div(style={
