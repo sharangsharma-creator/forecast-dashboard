@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import dash
 from dash import dcc, html, Input, Output, State, callback_context
 import dash_bootstrap_components as dbc
@@ -229,14 +228,12 @@ app.layout = html.Div([
             html.Div(
                 html.Span('ATHER', style={
                     'fontFamily':    "'Poppins', sans-serif",
-                    'fontWeight':     '600',
-                    'fontSize':       '16px',
-                    'letterSpacing':  '4px',
-                    'color':          '#ffffff',
-                    'lineHeight':     '1',
-                    'display':        'block',
-                    'transform':      'scaleX(1.3)',
-                    'transformOrigin':'left center',
+                    'fontWeight':    '600',
+                    'fontSize':      '16px',
+                    'letterSpacing': '4px',
+                    'color':         '#ffffff',
+                    'lineHeight':    '1',
+                    'display':       'block',
                 }),
                 style={
                     'height':     '20px',
@@ -848,4 +845,4 @@ def update_comparison(sel_mats, sort_by):
 
 
 if __name__ == '__main__':
-    app.run(debug=False, port=8050)
+    app.run(debug=False, port=8050) 
