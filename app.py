@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import dash
 from dash import dcc, html, Input, Output, State, callback_context
 import dash_bootstrap_components as dbc
@@ -224,19 +225,15 @@ app.layout = html.Div([
     # TOP BAR
     html.Div([
         html.Div([
-            # Ather logo SVG
-            html.Div(
-                dangerouslySetInnerHTML={
-                    '__html': (
-                        '<svg viewBox="0 0 97 20" height="20px" xmlns="http://www.w3.org/2000/svg">'
-                        '<text font-family="\'Poppins\', sans-serif" font-weight="600" font-size="16" '
-                        'letter-spacing="1" textLength="95" lengthAdjust="spacingAndGlyphs" '
-                        'fill="#ffffff" x="0" y="17">ATHER</text>'
-                        '</svg>'
-                    )
-                },
-                style={'height': '20px', 'display': 'flex', 'alignItems': 'center'}
-            ),
+            # Ather logo
+            html.Span('ATHER', style={
+                'fontFamily': "'Poppins', sans-serif",
+                'fontWeight': '600',
+                'fontSize':   '18px',
+                'letterSpacing': '1px',
+                'color':      '#ffffff',
+                'lineHeight': '1',
+            }),
             # Vertical divider
             html.Div(style={
                 'width': '1px', 'height': '22px',
