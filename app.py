@@ -164,7 +164,7 @@ def make_mat_card(mat, idx, is_selected):
 # -- APP INIT -----------------------------------------------------------------
 app = dash.Dash(__name__, external_stylesheets=[
     dbc.themes.DARKLY,
-    'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600&display=swap'
+    'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;600&display=swap'
 ])
 app.title = 'Forecasting Dashboard'
 server = app.server
@@ -231,7 +231,7 @@ app.layout = html.Div([
                     'fontFamily':    "'Poppins', sans-serif",
                     'fontWeight':    '600',
                     'fontSize':      '16px',
-                    'letterSpacing': '8px',
+                    'letterSpacing': '4px',
                     'color':         '#ffffff',
                     'lineHeight':    '1',
                     'display':       'block',
