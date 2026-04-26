@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import dash
 from dash import dcc, html, Input, Output, State, callback_context
 import dash_bootstrap_components as dbc
@@ -164,7 +163,7 @@ def make_mat_card(mat, idx, is_selected):
 # -- APP INIT -----------------------------------------------------------------
 app = dash.Dash(__name__, external_stylesheets=[
     dbc.themes.DARKLY,
-    'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'
+    'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600&display=swap'
 ])
 app.title = 'Forecasting Dashboard'
 server = app.server
@@ -225,12 +224,28 @@ app.layout = html.Div([
     # TOP BAR
     html.Div([
         html.Div([
-            html.Span('Forecasting Dashboard', style={
-                'fontSize': '16px', 'fontWeight': '700', 'color': '#f0f6fc', 'letterSpacing': '-0.3px'
+            # Ather logo SVG
+            html.Div(
+                dangerouslySetInnerHTML={
+                    '__html': (
+                        '<svg viewBox="0 0 97 20" height="20px" xmlns="http://www.w3.org/2000/svg">'
+                        '<text font-family="\'Poppins\', sans-serif" font-weight="600" font-size="16" '
+                        'letter-spacing="1" textLength="95" lengthAdjust="spacingAndGlyphs" '
+                        'fill="#ffffff" x="0" y="17">ATHER</text>'
+                        '</svg>'
+                    )
+                },
+                style={'height': '20px', 'display': 'flex', 'alignItems': 'center'}
+            ),
+            # Vertical divider
+            html.Div(style={
+                'width': '1px', 'height': '22px',
+                'background': 'rgba(255,255,255,0.15)',
+                'margin': '0 14px',
             }),
-            html.Span('Ather Energy · Accessories · FY26', style={
-                'fontSize': '11px', 'color': '#8b949e',
-                'paddingLeft': '12px', 'marginLeft': '12px', 'borderLeft': '1px solid #21262d'
+            # Subtitle
+            html.Span('Forecasting Dashboard · Accessories · FY26', style={
+                'fontSize': '11px', 'color': '#8b949e', 'letterSpacing': '0.1px'
             }),
         ], style={'display': 'flex', 'alignItems': 'center'}),
     ], style={
@@ -825,4 +840,4 @@ def update_comparison(sel_mats, sort_by):
 
 
 if __name__ == '__main__':
-    app.run(debug=False, port=8050) 
+    app.run(debug=False, port=8050)
