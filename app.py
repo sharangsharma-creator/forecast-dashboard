@@ -229,12 +229,14 @@ app.layout = html.Div([
             html.Div(
                 html.Span('ATHER', style={
                     'fontFamily':    "'Poppins', sans-serif",
-                    'fontWeight':    '600',
-                    'fontSize':      '16px',
-                    'letterSpacing': '4px',
-                    'color':         '#ffffff',
-                    'lineHeight':    '1',
-                    'display':       'block',
+                    'fontWeight':     '600',
+                    'fontSize':       '16px',
+                    'letterSpacing':  '4px',
+                    'color':          '#ffffff',
+                    'lineHeight':     '1',
+                    'display':        'block',
+                    'transform':      'scaleX(1.3)',
+                    'transformOrigin':'left center',
                 }),
                 style={
                     'height':     '20px',
